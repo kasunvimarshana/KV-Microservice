@@ -4,17 +4,29 @@ declare(strict_types=1);
 
 namespace App\Application\Contracts\Repositories;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Domain\Models\User;
+use Shared\BaseRepository\BaseRepositoryInterface;
 
 /**
- * User Repository Interface
+ * User Repository Contract
  * 
- * Defines the contract for user data persistence operations.
- * The Application layer depends on this interface, not on Eloquent directly.
+ * Extends the base repository with User-specific query methods.
+ * Depends on the domain model User - infrastructure depends on this, not vice versa.
  */
-interface UserRepositoryInterface
+interface UserRepositoryInterface extends BaseRepositoryInterface
 {
-    public function findByEmail(string $email): ?Model;
-    public function findByUuid(string $uuid): ?Model;
-    public function existsByEmail(string $email): bool;
+    /**
+     * Find a user by email within a specific tenant.
+     */
+    public function findByEmailAndTenant(string $email, string|int $tenantId): ?User;
+
+    /**
+     * Check if email exists within a tenant.
+     */
+    public function existsByEmailAndTenant(string $email, string|int $tenantId): bool;
+
+    /**
+     * Find user by their active OAuth token (for token validation).
+     */
+    public function findByToken(string $token): ?User;
 }
