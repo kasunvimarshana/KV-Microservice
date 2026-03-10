@@ -7,7 +7,7 @@ namespace App\Application\DTOs;
 final class ProductDTO
 {
     public function __construct(
-        public readonly string $tenantId,
+        public readonly string|int $tenantId,
         public readonly string $name,
         public readonly string $code,
         public readonly ?int $categoryId,

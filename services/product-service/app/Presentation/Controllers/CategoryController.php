@@ -47,8 +47,16 @@ class CategoryController extends Controller
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'slug' => 'sometimes|string|max:255',
+            'parent_id' => 'sometimes|nullable|integer|exists:categories,id',
+            'description' => 'sometimes|nullable|string',
+            'is_active' => 'sometimes|boolean',
+            'sort_order' => 'sometimes|integer|min:0',
+        ]);
         $category = Category::findOrFail($id);
-        $category->update($request->only(['name', 'slug', 'description', 'parent_id', 'is_active', 'sort_order']));
+        $category->update($validated);
         return response()->json(['success' => true, 'data' => $category]);
     }
 

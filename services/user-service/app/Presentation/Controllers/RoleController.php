@@ -46,8 +46,16 @@ class RoleController extends Controller
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'slug' => 'sometimes|string|max:255',
+            'description' => 'sometimes|nullable|string',
+            'permissions' => 'sometimes|nullable|array',
+            'permissions.*' => 'string',
+            'is_active' => 'sometimes|boolean',
+        ]);
         $role = Role::findOrFail($id);
-        $role->update($request->only(['name', 'slug', 'description', 'permissions', 'is_active']));
+        $role->update($validated);
         return response()->json(['success' => true, 'data' => $role]);
     }
 
