@@ -72,15 +72,17 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     /**
      * Find user by their active OAuth token.
      * 
+     * Passport stores the token UUID as the `id` in `oauth_access_tokens`.
+     * The bearer token returned from `createToken()` is this UUID directly.
+     * 
      * @param string $token
      * @return User|null
      */
     public function findByToken(string $token): ?User
     {
-        // Passport stores hashed tokens - this uses the token ID + user lookup
         return $this->newQuery()
             ->whereHas('tokens', function ($query) use ($token) {
-                $query->where('id', hash('sha256', $token))
+                $query->where('id', $token)
                       ->where('revoked', false)
                       ->where(function ($q) {
                           $q->whereNull('expires_at')

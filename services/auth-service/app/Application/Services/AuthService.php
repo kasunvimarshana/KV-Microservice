@@ -27,6 +27,11 @@ use Laravel\Passport\Token;
  */
 class AuthService implements AuthServiceInterface
 {
+    private const TOKEN_TTL_HOURS = 24;
+    private const TOKEN_TTL_REMEMBER_DAYS = 30;
+    private const TOKEN_TTL_SECONDS = 86400;           // 24h in seconds
+    private const TOKEN_TTL_REMEMBER_SECONDS = 2592000; // 30d in seconds
+
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
         private readonly TenantConfigServiceInterface $tenantConfigService,
@@ -70,7 +75,9 @@ class AuthService implements AuthServiceInterface
         $tokenResult = $user->createToken(
             name: $dto->deviceName ?? 'API Token',
             scopes: $this->getScopesForRole($user->role),
-            expiresAt: $dto->remember ? now()->addDays(30) : now()->addHours(24),
+            expiresAt: $dto->remember
+                ? now()->addDays(self::TOKEN_TTL_REMEMBER_DAYS)
+                : now()->addHours(self::TOKEN_TTL_HOURS),
         );
 
         Log::info('User logged in', [
@@ -81,7 +88,7 @@ class AuthService implements AuthServiceInterface
         return new TokenDTO(
             accessToken: $tokenResult->accessToken,
             tokenType: 'Bearer',
-            expiresIn: $dto->remember ? 2592000 : 86400,
+            expiresIn: $dto->remember ? self::TOKEN_TTL_REMEMBER_SECONDS : self::TOKEN_TTL_SECONDS,
             user: $this->formatUserData($user),
         );
     }
@@ -120,7 +127,7 @@ class AuthService implements AuthServiceInterface
         $tokenResult = $user->createToken(
             name: 'API Token',
             scopes: $this->getScopesForRole($user->role),
-            expiresAt: now()->addHours(24),
+            expiresAt: now()->addHours(self::TOKEN_TTL_HOURS),
         );
 
         Log::info('New user registered', [
@@ -131,7 +138,7 @@ class AuthService implements AuthServiceInterface
         return new TokenDTO(
             accessToken: $tokenResult->accessToken,
             tokenType: 'Bearer',
-            expiresIn: 86400,
+            expiresIn: self::TOKEN_TTL_SECONDS,
             user: $this->formatUserData($user),
         );
     }
